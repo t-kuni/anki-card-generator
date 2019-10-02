@@ -4,9 +4,11 @@ namespace TKuni\AnkiCardGenerator;
 
 use Dotenv\Dotenv;
 use SimpleLog\Logger;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 use TKuni\AnkiCardGenerator\Domain\AnkiCardAdder;
 use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\TranslateAdapter;
 
 class App {
 
@@ -28,6 +30,7 @@ class App {
 
         $this->ankiWebAdapter = new AnkiWebAdapter($this->logger);
         $this->githubAdapter = new GithubAdapter();
+        $this->translateAdapter = new TranslateAdapter();
     }
 
     public function run() {
@@ -41,7 +44,8 @@ class App {
         $comments = $this->githubAdapter->fetchComments($issue);
 
         $texts = $issue->title()->separate();
-        $texts[0];
+
+        $this->translateAdapter->translate($texts[0]);
 
 //        $id = getenv('ANKI_WEB_ID');
 //        $pw = getenv('ANKI_WEB_PW');
