@@ -1,6 +1,14 @@
 version: '3'
 services:
   app:
-    build: ./
+    build:
+      context: .
+      dockerfile: ./env/app/Dockerfile
+    volumes:
+      - ./app:/app
+  app-debug:
+    build:
+      context: .
+      dockerfile: ./env/app-debug/Dockerfile
     volumes:
       - ./app:/app
