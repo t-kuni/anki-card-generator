@@ -5,6 +5,7 @@ namespace TKuni\AnkiCardGenerator;
 use Dotenv\Dotenv;
 use SimpleLog\Logger;
 use TKuni\AnkiCardGenerator\Domain\AnkiCardAdder;
+use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
 
 class App {
 
@@ -15,7 +16,8 @@ class App {
         $dotenv = Dotenv::create(__DIR__ . '/../');
         $dotenv->load();
 
-        $this->ankiCardAdder = new AnkiCardAdder($this->logger);
+        $ankiWebAdapter = new AnkiWebAdapter($this->logger);
+        $this->ankiCardAdder = new AnkiCardAdder($this->logger, $ankiWebAdapter);
     }
 
     public function run() {
