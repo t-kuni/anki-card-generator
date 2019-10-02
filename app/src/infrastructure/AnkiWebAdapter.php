@@ -4,24 +4,30 @@ namespace TKuni\AnkiCardGenerator\Infrastructure;
 
 use Nesk\Puphpeteer\Puppeteer;
 use Nesk\Rialto\Data\JsFunction;
+use Psr\Log\LoggerInterface;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IAnkiWebAdapter;
 
 class AnkiWebAdapter implements IAnkiWebAdapter
 {
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var Puppeteer
+     */
+    private $puppeteer;
 
-    public function __construct(\Psr\Log\LoggerInterface $logger)
+    private $browser;
+
+    public function __construct(LoggerInterface $logger)
     {
         $this->logger = $logger;
-    }
 
-    public function addCard($deck, $front, $back) {
-        $puppeteer = new Puppeteer([
+        $this->puppeteer = new Puppeteer([
         ]);
-        $browser   = $puppeteer->launch([
+
+        $this->browser   = $this->puppeteer->launch([
             'executablePath'  => getenv('CHROMIUM_PATH'),
             'defaultViewport' => [
                 'width'            => 800,
@@ -34,18 +40,27 @@ class AnkiWebAdapter implements IAnkiWebAdapter
                 '--no-sandbox', '--disable-setuid-sandbox',
             ],
         ]);
+    }
 
+    public function login($id, $pw) {
         $this->logger->info('ログイン開始');
-        $page = $browser->newPage();
+
+        $page = $this->browser->newPage();
         $page->goto('https://ankiweb.net/account/login');
-        $page->type('#email', getenv('ANKI_WEB_ID'));
-        $page->type('#password', getenv('ANKI_WEB_PW'));
+        $page->type('#email', $id);
+        $page->type('#password', $pw);
         $page->querySelector('input[type="submit"]')->press('Enter');
         $page->waitForNavigation();
+        $page->close();
         //$page->screenshot(['path' => '/app/test.png']);
-        $this->logger->info('ログイン終了');
 
+        $this->logger->info('ログイン終了');
+    }
+
+    public function createCard($deck, $front, $back) {
         $this->logger->info('カード追加開始');
+
+        $page = $this->browser->newPage();
         $page->goto('https://ankiuser.net/edit/');
         $page->querySelectorEval('#deck', JsFunction::createWithParameters(['node'])
             ->body('node.value = ""'));
@@ -53,9 +68,14 @@ class AnkiWebAdapter implements IAnkiWebAdapter
         $page->type('#f0', $front);
         $page->type('#f1', $back);
         $page->querySelector('button.btn-primary')->press('Enter');
+        $page->close();
         //$page->screenshot(['path' => '/app/test.png']);
-        $this->logger->info('カード追加完了');
 
-        $browser->close();
+        $this->logger->info('カード追加完了');
+    }
+
+    function __destruct()
+    {
+        $this->browser->close();
     }
 }
