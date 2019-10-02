@@ -10,10 +10,10 @@ class GithubAdapterTest extends TestCase
     /**
      * @test
      */
-    public function test() {
-
+    public function fetchIssues() {
         $adapter = new GithubAdapter();
-        $adapter->test();
+        $issues = $adapter->fetchIssues('laravel', 'framework');
+        var_dump($issues);
         $this->assertTrue(true);
     }
 }
