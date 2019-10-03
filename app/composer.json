@@ -5,7 +5,9 @@
         "markrogoyski/simplelog-php": "^0.4.0",
         "knplabs/github-api": "^2.11",
         "php-http/guzzle6-adapter": "^1.1",
-        "stichoza/google-translate-php": "^4.0"
+        "stichoza/google-translate-php": "^4.0",
+        "rakibtg/sleekdb": "^1.5",
+        "nesbot/carbon": "^2.24"
     },
     "autoload": {
         "psr-4": {

@@ -8,6 +8,7 @@ use Stichoza\GoogleTranslate\GoogleTranslate;
 use TKuni\AnkiCardGenerator\Domain\AnkiCardAdder;
 use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\ProgressRepository;
 use TKuni\AnkiCardGenerator\Infrastructure\TranslateAdapter;
 
 class App {
@@ -20,6 +21,14 @@ class App {
      * @var GithubAdapter
      */
     private $githubAdapter;
+    /**
+     * @var TranslateAdapter
+     */
+    private $translateAdapter;
+    /**
+     * @var ProgressRepository
+     */
+    private $progressRepo;
 
     public function __construct()
     {
@@ -31,6 +40,7 @@ class App {
         $this->ankiWebAdapter = new AnkiWebAdapter($this->logger);
         $this->githubAdapter = new GithubAdapter();
         $this->translateAdapter = new TranslateAdapter();
+        $this->progressRepo = new ProgressRepository();
     }
 
     public function run() {
@@ -40,6 +50,11 @@ class App {
         $issues     = $this->githubAdapter->fetchIssues($username, $repository);
 
         $issue  = $issues[0];
+        $since = null;
+        if (($progress = $this->progressRepo->findByIssue($issue->username(), $issue->repository(), $issue->number())) !== null) {
+            $since = $progress->checked_at()->toString();
+        }
+
 
         $comments = $this->githubAdapter->fetchComments($issue);
 
