@@ -24,7 +24,8 @@ class GithubAdapterTest extends TestCase
     public function fetchComments() {
         $adapter = new GithubAdapter();
         $issues = $adapter->fetchIssues('laravel', 'framework');
-        $comments = $adapter->fetchComments($issues[0]);
+        $comments = $adapter->fetchComments($issues[2], null);
+        var_dump($issues[2]);
         var_dump($comments);
         $this->assertTrue(true);
     }

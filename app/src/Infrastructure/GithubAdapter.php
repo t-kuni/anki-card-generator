@@ -4,6 +4,7 @@
 namespace TKuni\AnkiCardGenerator\Infrastructure;
 
 
+use Carbon\Carbon;
 use Github\Client;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Comment;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Issue;
@@ -33,7 +34,7 @@ class GithubAdapter implements IGithubAdapter
         }, $issues);
     }
 
-    public function fetchComments(Issue $issue): array
+    public function fetchComments(Issue $issue, ?Carbon $since): array
     {
         $comments = $this->client->api('issue')
             ->comments()

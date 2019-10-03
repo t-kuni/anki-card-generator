@@ -55,7 +55,6 @@ class App {
             $since = $progress->checked_at()->toString();
         }
 
-
         $comments = $this->githubAdapter->fetchComments($issue);
 
         $texts = $issue->title()->separate();
