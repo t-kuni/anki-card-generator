@@ -19,7 +19,10 @@
     "autoload": {
         "psr-4": {
             "TKuni\\AnkiCardGenerator\\" : "src/"
-        }
+        },
+        "files": [
+            "helpers.php"
+        ]
     },
     "require-dev": {
         "phpunit/phpunit": "^8"

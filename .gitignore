@@ -4,3 +4,5 @@ vendor
 .env
 /app/test.png
 /app/storage
+coverage-report.xml
+.phpunit.result.cache

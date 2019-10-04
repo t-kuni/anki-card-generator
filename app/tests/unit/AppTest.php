@@ -31,6 +31,7 @@ class AppTest extends TestCase
         $translate    = $this->makeTranslateMock();
         $ankiWeb      = $this->makeAnkiWebMock();
         $progressRepo = $this->makeProgressRepoMock();
+        app()->get('app');
 
         #
         # Run
@@ -108,6 +109,11 @@ class AppTest extends TestCase
 
             public function saveCard($deck, Card $card)
             {
+                if ($card->front() !== 'title' || $card->back() !== 'タイトル') {
+                    throw new \Exception('意図しないCard');
+                }
+                yield;
+
                 if ($card->front() !== 'title' || $card->back() !== 'タイトル') {
                     throw new \Exception('意図しないCard');
                 }
