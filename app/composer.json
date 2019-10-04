@@ -3,12 +3,18 @@
         "nesk/puphpeteer": "^1.6",
         "vlucas/phpdotenv": "^3.6",
         "markrogoyski/simplelog-php": "^0.4.0",
-        "knplabs/github-api": "^2.11",
+        "knplabs/github-api": "dev-custom-2.11.0",
         "php-http/guzzle6-adapter": "^1.1",
         "stichoza/google-translate-php": "^4.0",
         "rakibtg/sleekdb": "^1.5",
         "nesbot/carbon": "^2.24"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/t-kuni/php-github-api"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "TKuni\\AnkiCardGenerator\\" : "src/"

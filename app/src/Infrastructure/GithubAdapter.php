@@ -36,9 +36,14 @@ class GithubAdapter implements IGithubAdapter
 
     public function fetchComments(Issue $issue, ?Carbon $since): array
     {
+        $parameter = [];
+        if (!empty($since)) {
+            $parameter['since'] = $since;
+        }
+
         $comments = $this->client->api('issue')
             ->comments()
-            ->all($issue->username(), $issue->repository(), $issue->number());
+            ->all($issue->username(), $issue->repository(), $issue->number(), $parameter);
 
         return array_map(function ($comment) {
             $body = new EnglishText($comment['body']);

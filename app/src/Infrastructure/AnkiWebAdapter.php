@@ -5,6 +5,7 @@ namespace TKuni\AnkiCardGenerator\Infrastructure;
 use Nesk\Puphpeteer\Puppeteer;
 use Nesk\Rialto\Data\JsFunction;
 use Psr\Log\LoggerInterface;
+use TKuni\AnkiCardGenerator\Domain\Models\Card;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IAnkiWebAdapter;
 
 class AnkiWebAdapter implements IAnkiWebAdapter
@@ -57,7 +58,7 @@ class AnkiWebAdapter implements IAnkiWebAdapter
         $this->logger->info('ログイン終了');
     }
 
-    public function createCard($deck, $front, $back) {
+    public function saveCard($deck, Card $card) {
         $this->logger->info('カード追加開始');
 
         $page = $this->browser->newPage();
@@ -65,8 +66,8 @@ class AnkiWebAdapter implements IAnkiWebAdapter
         $page->querySelectorEval('#deck', JsFunction::createWithParameters(['node'])
             ->body('node.value = ""'));
         $page->type('#deck', $deck);
-        $page->type('#f0', $front);
-        $page->type('#f1', $back);
+        $page->type('#f0', $card->front());
+        $page->type('#f1', $card->back());
         $page->querySelector('button.btn-primary')->press('Enter');
         $page->close();
         //$page->screenshot(['path' => '/app/test.png']);

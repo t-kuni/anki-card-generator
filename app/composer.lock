@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "daeeb63769cff6ab0f665f65dbae615d",
+    "content-hash": "3f53c6482c17f184ce760e2a215a9d91",
     "packages": [
         {
             "name": "clue/socket-raw",
@@ -302,16 +302,16 @@
         },
         {
             "name": "knplabs/github-api",
-            "version": "2.11.0",
+            "version": "dev-custom-2.11.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/KnpLabs/php-github-api.git",
-                "reference": "7e67b4ccf9ef62fbd6321a314c61d3202c07b855"
+                "url": "https://github.com/t-kuni/php-github-api.git",
+                "reference": "1824da16e4ac40174a2ea5a7c5a3ac2d0e6e5ba6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/php-github-api/zipball/7e67b4ccf9ef62fbd6321a314c61d3202c07b855",
-                "reference": "7e67b4ccf9ef62fbd6321a314c61d3202c07b855",
+                "url": "https://api.github.com/repos/t-kuni/php-github-api/zipball/1824da16e4ac40174a2ea5a7c5a3ac2d0e6e5ba6",
+                "reference": "1824da16e4ac40174a2ea5a7c5a3ac2d0e6e5ba6",
                 "shasum": ""
             },
             "require": {
@@ -342,19 +342,23 @@
                     "Github\\": "lib/Github/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Github\\Tests\\": "test/Github/Tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
+                    "name": "KnpLabs Team",
+                    "homepage": "http://knplabs.com"
+                },
+                {
                     "name": "Thibault Duplessis",
                     "email": "thibault.duplessis@gmail.com",
                     "homepage": "http://ornicar.github.com"
-                },
-                {
-                    "name": "KnpLabs Team",
-                    "homepage": "http://knplabs.com"
                 }
             ],
             "description": "GitHub API v3 client",
@@ -365,7 +369,10 @@
                 "gist",
                 "github"
             ],
-            "time": "2019-01-28T19:31:35+00:00"
+            "support": {
+                "source": "https://github.com/t-kuni/php-github-api/tree/custom-2.11.0"
+            },
+            "time": "2019-10-04T01:40:40+00:00"
         },
         {
             "name": "markrogoyski/simplelog-php",
@@ -3323,7 +3330,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "knplabs/github-api": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

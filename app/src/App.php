@@ -6,6 +6,7 @@ use Dotenv\Dotenv;
 use SimpleLog\Logger;
 use Stichoza\GoogleTranslate\GoogleTranslate;
 use TKuni\AnkiCardGenerator\Domain\AnkiCardAdder;
+use TKuni\AnkiCardGenerator\Domain\Models\Card;
 use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\ProgressRepository;
@@ -49,21 +50,34 @@ class App {
         $repository = getenv('GITHUB_REPO');
         $issues     = $this->githubAdapter->fetchIssues($username, $repository);
 
+        $enTexts = [];
+
         $issue  = $issues[0];
         $since = null;
         if (($progress = $this->progressRepo->findByIssue($issue->username(), $issue->repository(), $issue->number())) !== null) {
-            $since = $progress->checked_at()->toString();
+            $since = $progress->checked_at();
+        } else {
+            $enTexts += $issue->title()->separate();
+            $enTexts += $issue->body()->separate();
         }
 
-        $comments = $this->githubAdapter->fetchComments($issue);
+        $comments = $this->githubAdapter->fetchComments($issue, $since);
+        $enTexts += array_map(function($comment) {
+            return $comment->body()->separate();
+        }, $comments);
 
-        $texts = $issue->title()->separate();
+        $translateAdapter = $this->translateAdapter;
 
-        $this->translateAdapter->translate($texts[0]);
+        $cards = array_map(function($enText) use ($translateAdapter) {
+            $jpText = $translateAdapter->translate($enText);
+            return new Card($enText, $jpText);
+        }, $enTexts);
 
-//        $id = getenv('ANKI_WEB_ID');
-//        $pw = getenv('ANKI_WEB_PW');
-//        $this->ankiWebAdapter->login($id, $pw);
-//        $this->ankiWebAdapter->createCard('000_test', 'test', 'test');
+        $id = getenv('ANKI_WEB_ID');
+        $pw = getenv('ANKI_WEB_PW');
+        $this->ankiWebAdapter->login($id, $pw);
+        foreach ($cards as $card) {
+            $this->ankiWebAdapter->saveCard('000_test', $card);
+        }
     }
 }
