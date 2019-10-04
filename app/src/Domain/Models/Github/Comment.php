@@ -17,4 +17,8 @@ class Comment
     {
         $this->body = $body;
     }
+
+    public function body() {
+        return $this->body;
+    }
 }

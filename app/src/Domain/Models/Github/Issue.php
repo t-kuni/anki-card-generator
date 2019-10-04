@@ -54,4 +54,8 @@ class Issue
     public function title() {
         return $this->title;
     }
+
+    public function body() {
+        return $this->body;
+    }
 }

@@ -9,5 +9,5 @@ interface IGithubAdapter
 {
     public function fetchIssues(string $username, string $repository);
 
-    public function fetchComments(Issue $issue, Carbon $since);
+    public function fetchComments(Issue $issue, ?Carbon $since);
 }

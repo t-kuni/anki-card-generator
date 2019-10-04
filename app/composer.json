@@ -7,7 +7,8 @@
         "php-http/guzzle6-adapter": "^1.1",
         "stichoza/google-translate-php": "^4.0",
         "rakibtg/sleekdb": "^1.5",
-        "nesbot/carbon": "^2.24"
+        "nesbot/carbon": "^2.24",
+        "league/container": "^3.3"
     },
     "repositories": [
         {

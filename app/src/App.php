@@ -2,57 +2,57 @@
 
 namespace TKuni\AnkiCardGenerator;
 
-use Dotenv\Dotenv;
-use SimpleLog\Logger;
-use Stichoza\GoogleTranslate\GoogleTranslate;
+use Psr\Log\LoggerInterface;
 use TKuni\AnkiCardGenerator\Domain\AnkiCardAdder;
 use TKuni\AnkiCardGenerator\Domain\Models\Card;
-use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
-use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
-use TKuni\AnkiCardGenerator\Infrastructure\ProgressRepository;
-use TKuni\AnkiCardGenerator\Infrastructure\TranslateAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IAnkiWebAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IGithubAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IProgressRepository;
+use TKuni\AnkiCardGenerator\Infrastructure\interfaces\ITranslateAdapter;
 
-class App {
-
+class App
+{
     /**
-     * @var AnkiWebAdapter
+     * @var LoggerInterface
      */
-    private $ankiWebAdapter;
+    private $logger;
     /**
-     * @var GithubAdapter
+     * @var IAnkiWebAdapter
      */
-    private $githubAdapter;
+    private $ankiWeb;
     /**
-     * @var TranslateAdapter
+     * @var IGithubAdapter
      */
-    private $translateAdapter;
+    private $github;
     /**
-     * @var ProgressRepository
+     * @var ITranslateAdapter
+     */
+    private $translate;
+    /**
+     * @var IProgressRepository
      */
     private $progressRepo;
 
-    public function __construct()
+    public function __construct(LoggerInterface $logger, IAnkiWebAdapter $ankiWeb, IGithubAdapter $github,
+                                ITranslateAdapter $translate,
+                                IProgressRepository $progressRepo)
     {
-        $this->logger = new Logger('/dev/stdout', 'default');
-
-        $dotenv = Dotenv::create(__DIR__ . '/../');
-        $dotenv->load();
-
-        $this->ankiWebAdapter = new AnkiWebAdapter($this->logger);
-        $this->githubAdapter = new GithubAdapter();
-        $this->translateAdapter = new TranslateAdapter();
-        $this->progressRepo = new ProgressRepository();
+        $this->logger       = $logger;
+        $this->ankiWeb      = $ankiWeb;
+        $this->github       = $github;
+        $this->translate    = $translate;
+        $this->progressRepo = $progressRepo;
     }
 
-    public function run() {
-
+    public function run()
+    {
         $username   = getenv('GITHUB_USER');
         $repository = getenv('GITHUB_REPO');
-        $issues     = $this->githubAdapter->fetchIssues($username, $repository);
+        $issues     = $this->github->fetchIssues($username, $repository);
 
         $enTexts = [];
 
-        $issue  = $issues[0];
+        $issue = $issues[0];
         $since = null;
         if (($progress = $this->progressRepo->findByIssue($issue->username(), $issue->repository(), $issue->number())) !== null) {
             $since = $progress->checked_at();
@@ -61,23 +61,23 @@ class App {
             $enTexts += $issue->body()->separate();
         }
 
-        $comments = $this->githubAdapter->fetchComments($issue, $since);
-        $enTexts += array_map(function($comment) {
+        $comments = $this->github->fetchComments($issue, $since);
+        $enTexts  += array_map(function ($comment) {
             return $comment->body()->separate();
         }, $comments);
 
-        $translateAdapter = $this->translateAdapter;
+        $translate = $this->translate;
 
-        $cards = array_map(function($enText) use ($translateAdapter) {
-            $jpText = $translateAdapter->translate($enText);
+        $cards = array_map(function ($enText) use ($translate) {
+            $jpText = $translate->translate($enText);
             return new Card($enText, $jpText);
         }, $enTexts);
 
         $id = getenv('ANKI_WEB_ID');
         $pw = getenv('ANKI_WEB_PW');
-        $this->ankiWebAdapter->login($id, $pw);
+        $this->ankiWeb->login($id, $pw);
         foreach ($cards as $card) {
-            $this->ankiWebAdapter->saveCard('000_test', $card);
+            $this->ankiWeb->saveCard('000_test', $card);
         }
     }
 }

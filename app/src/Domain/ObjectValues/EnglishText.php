@@ -16,7 +16,7 @@ class EnglishText
 
     public function separate() : array
     {
-        $texts = explode('.?', $this->text);
+        $texts = preg_split('/[.? ]/', $this->text, -1, PREG_SPLIT_NO_EMPTY);
 
         return array_map(function($text) {
             return $text;
