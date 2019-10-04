@@ -3,8 +3,7 @@
 namespace TKuni\AnkiCardGenerator;
 
 use Dotenv\Dotenv;
-use League\Container\Container;
-use League\Container\ReflectionContainer;
+use Opis\Container\Container;
 use Psr\Log\LoggerInterface;
 use SimpleLog\Logger;
 use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
@@ -27,15 +26,12 @@ Dotenv::create(__DIR__)->load();
 # Setup DI Container.
 #
 $app = new Container();
-$app->delegate(new ReflectionContainer());
 
-$app->add('app', App::class);
-$app->add(LoggerInterface::class, function() {
+$app->bind('app', App::class);
+$app->singleton(LoggerInterface::class, function() {
     return new Logger('/dev/stdout', 'default');
-})->setShared(true);
-$app->add(IAnkiWebAdapter::class, AnkiWebAdapter::class);
-$app->add(IGithubAdapter::class, GithubAdapter::class);
-$app->add(ITranslateAdapter::class, TranslateAdapter::class);
-$app->add(IProgressRepository::class, ProgressRepository::class);
-
-$app->get('app');
+});
+$app->bind(IAnkiWebAdapter::class, AnkiWebAdapter::class);
+$app->bind(IGithubAdapter::class, GithubAdapter::class);
+$app->bind(ITranslateAdapter::class, TranslateAdapter::class);
+$app->bind(IProgressRepository::class, ProgressRepository::class);

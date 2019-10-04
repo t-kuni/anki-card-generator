@@ -8,7 +8,7 @@
         "stichoza/google-translate-php": "^4.0",
         "rakibtg/sleekdb": "^1.5",
         "nesbot/carbon": "^2.24",
-        "league/container": "^3.3"
+        "opis/container": "^3.0"
     },
     "repositories": [
         {

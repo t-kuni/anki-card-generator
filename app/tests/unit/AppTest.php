@@ -26,18 +26,24 @@ class AppTest extends TestCase
         #
         # Prepare
         #
-        $logger       = $this->makeLoggerMock();
-        $github       = $this->makeGithubMock();
-        $translate    = $this->makeTranslateMock();
-        $ankiWeb      = $this->makeAnkiWebMock();
-        $progressRepo = $this->makeProgressRepoMock();
-        app()->get('app');
+        app()->bind(IGithubAdapter::class, function() {
+            return $this->makeGithubMock();
+        });
+        app()->bind(ITranslateAdapter::class, function() {
+            return $this->makeTranslateMock();
+        });
+        app()->bind(IAnkiWebAdapter::class, function() {
+            return $this->makeAnkiWebMock();
+        });
+        app()->bind(IProgressRepository::class, function() {
+            return $this->makeProgressRepoMock();
+        });
+        ;
 
         #
         # Run
         #
-        $app = new App($logger, $ankiWeb, $github, $translate, $progressRepo);
-        $app->run();
+        app()->make('app')->run();
 
         #
         # Assertion
