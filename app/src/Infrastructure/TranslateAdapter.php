@@ -29,6 +29,9 @@ class TranslateAdapter implements ITranslateAdapter
 
     public function translate(string $text): string
     {
-        return $this->translater->translate($text);
+        $this->logger->info('Start to translate');
+        $result = $this->translater->translate($text);
+        $this->logger->info('End to translate');
+        return $result;
     }
 }

@@ -6,6 +6,7 @@ namespace TKuni\AnkiCardGenerator\Infrastructure;
 
 use Carbon\Carbon;
 use Github\Client;
+use Psr\Log\LoggerInterface;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Comment;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Issue;
 use TKuni\AnkiCardGenerator\Domain\ObjectValues\EnglishText;
@@ -13,29 +14,43 @@ use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IGithubAdapter;
 
 class GithubAdapter implements IGithubAdapter
 {
-    public function __construct()
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
     {
         $this->client = new Client();
+        $this->logger = $logger;
     }
 
     public function fetchIssues(string $username, string $repository): array
     {
+        $this->logger->info('Start to fetch Issue from github');
+
         $issues = $this->client->api('issue')->all($username, $repository, [
             'state'  => 'all',
             'filter' => 'all',
             'sort'   => 'updated',
         ]);
 
-        return array_map(function ($issue) use ($username, $repository) {
+        $result = array_map(function ($issue) use ($username, $repository) {
             $title  = new EnglishText($issue['title']);
             $body   = new EnglishText($issue['body']);
             $number = $issue['number'];
             return new Issue($username, $repository, $number, $title, $body);
         }, $issues);
+
+        $this->logger->info('End to fetch Issue from github');
+
+        return $result;
     }
 
     public function fetchComments(Issue $issue, ?Carbon $since): array
     {
+        $this->logger->info('Start to fetch Comments from github');
+
         $parameter = [];
         if (!empty($since)) {
             $parameter['since'] = $since;
@@ -45,9 +60,13 @@ class GithubAdapter implements IGithubAdapter
             ->comments()
             ->all($issue->username(), $issue->repository(), $issue->number(), $parameter);
 
-        return array_map(function ($comment) {
+        $result = array_map(function ($comment) {
             $body = new EnglishText($comment['body']);
             return new Comment($body);
         }, $comments);
+
+        $this->logger->info('End to fetch Comments from github');
+
+        return $result;
     }
 }
