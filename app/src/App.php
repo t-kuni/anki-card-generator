@@ -57,14 +57,17 @@ class App
         if (($progress = $this->progressRepo->findByIssue($issue->username(), $issue->repository(), $issue->number())) !== null) {
             $since = $progress->checked_at();
         } else {
-            $enTexts += $issue->title()->separate();
-            $enTexts += $issue->body()->separate();
+            $enTexts = array_merge($enTexts, $issue->title()->separate());
+            $enTexts = array_merge($enTexts, $issue->body()->separate());
         }
 
         $comments = $this->github->fetchComments($issue, $since);
-        $enTexts  += array_map(function ($comment) {
-            return $comment->body()->separate();
-        }, $comments);
+        $enTexts  = array_merge(
+            $enTexts,
+            array_reduce($comments, function ($curr, $comment) {
+                return array_merge($curr, $comment->body()->separate());
+            }, [])
+        );
 
         $translate = $this->translate;
 

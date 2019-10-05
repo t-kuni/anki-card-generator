@@ -18,6 +18,12 @@ use TKuni\AnkiCardGenerator\Infrastructure\interfaces\ITranslateAdapter;
 
 class AppTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        \Mockery::close();
+        parent::tearDown();
+    }
+
     /**
      * @test
      */
@@ -26,19 +32,89 @@ class AppTest extends TestCase
         #
         # Prepare
         #
-        app()->bind(IGithubAdapter::class, function() {
-            return $this->makeGithubMock();
+        $ankiWebMock = \Mockery::mock(IAnkiWebAdapter::class);
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'title'
+                && $card->back() === 'タイトル';
         });
-        app()->bind(ITranslateAdapter::class, function() {
-            return $this->makeTranslateMock();
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'apple'
+                && $card->back() === 'りんご';
         });
-        app()->bind(IAnkiWebAdapter::class, function() {
-            return $this->makeAnkiWebMock();
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'body'
+                && $card->back() === '本文';
         });
-        app()->bind(IProgressRepository::class, function() {
-            return $this->makeProgressRepoMock();
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'grape'
+                && $card->back() === 'ブドウ';
         });
-        ;
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'comment-body'
+                && $card->back() === 'コメント本文';
+        });
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'tomato'
+                && $card->back() === 'トマト';
+        });
+        $ankiWebMock->shouldReceive('login')->andReturnUndefined();
+        app()->bind(IAnkiWebAdapter::class, function() use ($ankiWebMock) {
+            return $ankiWebMock;
+        });
+
+        $githubMock = \Mockery::mock(IGithubAdapter::class);
+        $githubMock->shouldReceive('fetchIssues')->andReturnUsing(function($username, $repository) {
+            return [
+                new Issue(
+                    $username,
+                    $repository,
+                    1,
+                    new EnglishText('title. apple.'),
+                    new EnglishText('body. grape.'),
+                ),
+            ];
+        });
+        $githubMock->shouldReceive('fetchComments')->andReturnUsing(function() {
+            return [
+                new Comment(new EnglishText('comment-body. tomato'))
+            ];
+        });
+        app()->bind(IGithubAdapter::class, function() use ($githubMock) {
+            return $githubMock;
+        });
+
+        $translateMock = \Mockery::mock(ITranslateAdapter::class);
+        $translateMock->shouldReceive('translate')->andReturnUsing(function($text) {
+            switch ($text) {
+                case 'title':
+                    return 'タイトル';
+                case 'apple':
+                    return 'りんご';
+                case 'body':
+                    return '本文';
+                case 'comment-body':
+                    return 'コメント本文';
+                case 'grape':
+                    return 'ブドウ';
+                case 'tomato':
+                    return 'トマト';
+                default:
+                    throw new \Exception('意図しない入力:' . $text);
+                    break;
+            }
+        });
+        app()->bind(ITranslateAdapter::class, function() use ($translateMock) {
+            return $translateMock;
+        });
+
+        $progressRepoMock = \Mockery::mock(IProgressRepository::class);
+        $progressRepoMock->shouldReceive('save')->andReturnUndefined();
+        $progressRepoMock->shouldReceive('findByIssue')->andReturnUsing(function($text) {
+            return null;
+        });
+        app()->bind(IProgressRepository::class, function() use ($progressRepoMock) {
+            return $progressRepoMock;
+        });
 
         #
         # Run
@@ -49,235 +125,5 @@ class AppTest extends TestCase
         # Assertion
         #
         $this->assertTrue(true);
-    }
-
-    private function makeGithubMock()
-    {
-        return new class implements IGithubAdapter
-        {
-            public function fetchIssues(string $username, string $repository)
-            {
-                return [
-                    new Issue(
-                        $username,
-                        $repository,
-                        1,
-                        new EnglishText('title. apple. orange.'),
-                        new EnglishText('body. grape.'),
-                    ),
-                ];
-            }
-
-            public function fetchComments(Issue $issue, ?Carbon $since)
-            {
-                return [
-                    new Comment(new EnglishText('body. tomato'))
-                ];
-            }
-        };
-    }
-
-    private function makeTranslateMock()
-    {
-        return new class implements ITranslateAdapter
-        {
-            public function translate(string $text): string
-            {
-                switch ($text) {
-                    case 'title':
-                        return 'タイトル';
-                    case 'apple':
-                        return 'りんご';
-                    case 'orange':
-                        return 'オレンジ';
-                    case 'body':
-                        return '本文';
-                    case 'grape':
-                        return 'ブドウ';
-                    case 'tomato':
-                        return 'トマト';
-                    default:
-                        throw new \Exception('意図しない入力:' . $text);
-                        break;
-                }
-            }
-        };
-    }
-
-    private function makeAnkiWebMock()
-    {
-        return new class implements IAnkiWebAdapter
-        {
-            public function login($id, $pw)
-            {
-                // TODO: Implement login() method.
-            }
-
-            public function saveCard($deck, Card $card)
-            {
-                if ($card->front() !== 'title' || $card->back() !== 'タイトル') {
-                    throw new \Exception('意図しないCard');
-                }
-                yield;
-
-                if ($card->front() !== 'title' || $card->back() !== 'タイトル') {
-                    throw new \Exception('意図しないCard');
-                }
-                yield;
-            }
-        };
-    }
-
-    private function makeProgressRepoMock()
-    {
-        return new class implements IProgressRepository
-        {
-            public function save(string $username, string $repository, int $number, Carbon $checkedAt)
-            {
-                // TODO: Implement save() method.
-            }
-
-            public function findByIssue(string $username, string $repository, int $number)
-            {
-                // TODO: Implement findByIssue() method.
-                return null;
-            }
-        };
-    }
-
-    private function makeLoggerMock()
-    {
-        return new class implements LoggerInterface
-        {
-
-            /**
-             * System is unusable.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function emergency($message, array $context = array())
-            {
-                // TODO: Implement emergency() method.
-            }
-
-            /**
-             * Action must be taken immediately.
-             *
-             * Example: Entire website down, database unavailable, etc. This should
-             * trigger the SMS alerts and wake you up.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function alert($message, array $context = array())
-            {
-                // TODO: Implement alert() method.
-            }
-
-            /**
-             * Critical conditions.
-             *
-             * Example: Application component unavailable, unexpected exception.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function critical($message, array $context = array())
-            {
-                // TODO: Implement critical() method.
-            }
-
-            /**
-             * Runtime errors that do not require immediate action but should typically
-             * be logged and monitored.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function error($message, array $context = array())
-            {
-                // TODO: Implement error() method.
-            }
-
-            /**
-             * Exceptional occurrences that are not errors.
-             *
-             * Example: Use of deprecated APIs, poor use of an API, undesirable things
-             * that are not necessarily wrong.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function warning($message, array $context = array())
-            {
-                // TODO: Implement warning() method.
-            }
-
-            /**
-             * Normal but significant events.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function notice($message, array $context = array())
-            {
-                // TODO: Implement notice() method.
-            }
-
-            /**
-             * Interesting events.
-             *
-             * Example: User logs in, SQL logs.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function info($message, array $context = array())
-            {
-                // TODO: Implement info() method.
-            }
-
-            /**
-             * Detailed debug information.
-             *
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function debug($message, array $context = array())
-            {
-                // TODO: Implement debug() method.
-            }
-
-            /**
-             * Logs with an arbitrary level.
-             *
-             * @param mixed $level
-             * @param string $message
-             * @param array $context
-             *
-             * @return void
-             */
-            public function log($level, $message, array $context = array())
-            {
-                // TODO: Implement log() method.
-            }
-        };
     }
 }
