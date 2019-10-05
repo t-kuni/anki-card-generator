@@ -1,10 +1,8 @@
 <?php
 
-namespace TKuni\AnkiCardGenerator;
-
-require_once __DIR__ . 'bootstrap.php';
+require_once __DIR__ . '/bootstrap.php';
 
 #
 # Boot Application
 #
-app()->get('app')->run();
+app()->make('app')->run();

@@ -12,3 +12,4 @@ services:
       dockerfile: ./env/app-debug/Dockerfile
     volumes:
       - ./app:/app
+      - ./env/app-debug/php.ini-development:/usr/local/etc/php/php.ini

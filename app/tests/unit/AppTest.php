@@ -27,7 +27,7 @@ class AppTest extends TestCase
     /**
      * @test
      */
-    public function run_()
+    public function run_履歴がない場合()
     {
         #
         # Prepare
@@ -46,6 +46,10 @@ class AppTest extends TestCase
                 && $card->back() === '本文';
         });
         $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
+            return $card->front() === 'next line text'
+                && $card->back() === '改行を含むテキスト';
+        });
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
             return $card->front() === 'grape'
                 && $card->back() === 'ブドウ';
         });
@@ -54,8 +58,8 @@ class AppTest extends TestCase
                 && $card->back() === 'コメント本文';
         });
         $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function($deck, Card $card) {
-            return $card->front() === 'tomato'
-                && $card->back() === 'トマト';
+            return $card->front() === 'tomato city'
+                && $card->back() === 'トマトの町';
         });
         $ankiWebMock->shouldReceive('login')->andReturnUndefined();
         app()->bind(IAnkiWebAdapter::class, function() use ($ankiWebMock) {
@@ -70,13 +74,13 @@ class AppTest extends TestCase
                     $repository,
                     1,
                     new EnglishText('title. apple.'),
-                    new EnglishText('body. grape.'),
+                    new EnglishText("body. grape. \n next line text."),
                 ),
             ];
         });
         $githubMock->shouldReceive('fetchComments')->andReturnUsing(function() {
             return [
-                new Comment(new EnglishText('comment-body. tomato'))
+                new Comment(new EnglishText('comment-body. tomato city  .  .'))
             ];
         });
         app()->bind(IGithubAdapter::class, function() use ($githubMock) {
@@ -96,8 +100,10 @@ class AppTest extends TestCase
                     return 'コメント本文';
                 case 'grape':
                     return 'ブドウ';
-                case 'tomato':
-                    return 'トマト';
+                case 'tomato city':
+                    return 'トマトの町';
+                case 'next line text':
+                    return '改行を含むテキスト';
                 default:
                     throw new \Exception('意図しない入力:' . $text);
                     break;

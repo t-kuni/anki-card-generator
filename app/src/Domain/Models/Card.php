@@ -26,4 +26,9 @@ class Card
     public function back() {
         return $this->back;
     }
+
+    public function __debugInfo()
+    {
+        return (string)((array)$this);
+    }
 }

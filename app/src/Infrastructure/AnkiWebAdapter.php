@@ -59,7 +59,7 @@ class AnkiWebAdapter implements IAnkiWebAdapter
     }
 
     public function saveCard($deck, Card $card) {
-        $this->logger->info('カード追加開始');
+        $this->logger->info('カード追加開始', func_get_args());
 
         $page = $this->browser->newPage();
         $page->goto('https://ankiuser.net/edit/');

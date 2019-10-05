@@ -5,6 +5,7 @@ namespace TKuni\AnkiCardGenerator\Infrastructure;
 
 
 use Carbon\Carbon;
+use Psr\Log\LoggerInterface;
 use SleekDB\SleekDB;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Issue;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Progress;
@@ -12,13 +13,21 @@ use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IProgressRepository;
 
 class ProgressRepository implements IProgressRepository
 {
-    public function __construct()
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    public function __construct(LoggerInterface $logger)
     {
         $this->store = SleekDB::store('progress', '/app/storage');
+        $this->logger = $logger;
     }
 
     public function save(string $username, string $repository, int $number, Carbon $checked_at)
     {
+        $this->logger->info('Start to save Progress', func_get_args());
+
         $ctx = $this->store->keepConditions()
             ->where('username', '=', $username)
             ->where('repository', '=', $repository)
@@ -32,14 +41,20 @@ class ProgressRepository implements IProgressRepository
         } else {
             $ctx->update(compact('checked_at'));
         }
+
+        $this->logger->info('End to save Progress');
     }
 
     public function findByIssue(string $username, string $repository, int $number) : ?Progress
     {
+        $this->logger->info('Start to find Progress');
+
         $docs = $this->store->where('username', '=', $username)
             ->where('repository', '=', $repository)
             ->where('number', '=', $number)
             ->fetch();
+
+        $this->logger->info('End to find Progress');
 
         if (empty($docs[0])) {
             return null;
