@@ -26,7 +26,7 @@ class ProgressRepository implements IProgressRepository
 
     public function save(string $username, string $repository, int $number, Carbon $checked_at)
     {
-        $this->logger->info('Start to save Progress');
+        $this->logger->info('Start to save Progress', func_get_args());
 
         $ctx = $this->store->keepConditions()
             ->where('username', '=', $username)

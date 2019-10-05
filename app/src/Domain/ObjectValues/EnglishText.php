@@ -11,15 +11,21 @@ class EnglishText
 
     public function __construct(string $text)
     {
-        $this->text = $text;
+        $this->text = trim($text);
     }
 
     public function separate() : array
     {
-        $texts = preg_split('/[.? ]/', $this->text, -1, PREG_SPLIT_NO_EMPTY);
+        $texts = preg_split('/[.?]/', $this->text, -1, PREG_SPLIT_NO_EMPTY);
 
-        return array_map(function($text) {
-            return $text;
+        $trimedTexts = array_map(function($text) {
+            return trim($text);
         }, $texts);
+
+        $filteredTexts = array_filter($trimedTexts, function($trimed) {
+            return !empty($trimed);
+        });
+
+        return $filteredTexts;
     }
 }

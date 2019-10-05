@@ -27,7 +27,7 @@ class GithubAdapter implements IGithubAdapter
 
     public function fetchIssues(string $username, string $repository): array
     {
-        $this->logger->info('Start to fetch Issue from github');
+        $this->logger->info('Start to fetch Issue from github', func_get_args());
 
         $issues = $this->client->api('issue')->all($username, $repository, [
             'state'  => 'all',
