@@ -76,11 +76,18 @@ class App
             return new Card($enText, $jpText);
         }, $enTexts);
 
-        $id = getenv('ANKI_WEB_ID');
-        $pw = getenv('ANKI_WEB_PW');
+        $id   = getenv('ANKI_WEB_ID');
+        $pw   = getenv('ANKI_WEB_PW');
+        $deck = getenv('ANKI_WEB_DECK');
         $this->ankiWeb->login($id, $pw);
         foreach ($cards as $card) {
-            $this->ankiWeb->saveCard('000_test', $card);
+            $this->ankiWeb->saveCard($deck, $card);
         }
+
+        $created_at = null;
+        if (!empty($comments[count($comments) - 1]->created_at())) {
+            $created_at = $comments[count($comments) - 1]->created_at();
+        }
+        $this->progressRepo->save($username, $repository, $issue->number(), $created_at);
     }
 }
