@@ -22,7 +22,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 #
 # Load dot env file.
 #
-Dotenv::create(__DIR__)->load();
+Dotenv::create(__DIR__)->safeLoad();
 
 #
 # Setup DI Container.
