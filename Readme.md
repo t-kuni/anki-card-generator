@@ -1,3 +1,9 @@
+# About
+
+## Architecture
+
+![](https://github.com/t-kuni/github-issue-2-anki-card/tree/master/docs/architecture.png)
+
 # Build
 
 Build container.
