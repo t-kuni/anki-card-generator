@@ -1,7 +1,12 @@
+#
+# Import source code.
+#
 FROM php:7.3.10-cli-alpine3.10
+COPY ./app /app
+WORKDIR /app
 
 #
-# アプリケーション実行環境の構築
+# Build app environment.
 #
 RUN apk update \
     && apk add --no-cache nodejs=10.16.3-r0 npm=10.16.3-r0 chromium
@@ -11,8 +16,15 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 RUN docker-php-ext-install mbstring sockets \
     && docker-php-ext-enable mbstring sockets
 
-COPY ./app /app
+#
+# Install frontend packages.
+#
+RUN npm install
 
-WORKDIR /app
+#
+# Install backend packages.
+#
+RUN composer install --no-dev --no-autoloader
+RUN composer dump-autoload
 
 CMD ["php", "/app/entrypoint.php"]
