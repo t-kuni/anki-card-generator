@@ -2,7 +2,7 @@
 
 ## Architecture
 
-![architecture.png](https://github.com/t-kuni/github-issue-2-anki-card/tree/master/docs/architecture.png)
+![architecture.png](https://raw.githubusercontent.com/t-kuni/github-issue-2-anki-card/master/docs/architecture.png)
 
 # Build
 
