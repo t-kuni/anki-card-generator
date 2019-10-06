@@ -2,4 +2,4 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args: ['build', '-f', 'env/app/Dockerfile', '-t', 'gcr.io/github-issue-2-anki-card/github-issue-2-anki-card', '.']
 images:
-  - 'gcr.io/discus-250810/discus'
+  - 'gcr.io/github-issue-2-anki-card/github-issue-2-anki-card'
