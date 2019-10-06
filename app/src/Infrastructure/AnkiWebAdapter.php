@@ -44,7 +44,8 @@ class AnkiWebAdapter implements IAnkiWebAdapter
     }
 
     public function login($id, $pw) {
-        $this->logger->info('ログイン開始');
+        # Don't logging $id and $pw because it be include sensitive info.
+        $this->logger->info('Start to login to Anki Web');
 
         $page = $this->browser->newPage();
         $page->goto('https://ankiweb.net/account/login');
@@ -55,11 +56,11 @@ class AnkiWebAdapter implements IAnkiWebAdapter
         $page->close();
         //$page->screenshot(['path' => '/app/test.png']);
 
-        $this->logger->info('ログイン終了');
+        $this->logger->info('End to login to Anki Web');
     }
 
     public function saveCard($deck, Card $card) {
-        $this->logger->info('カード追加開始', func_get_args());
+        $this->logger->info('Start to add card to Anki Web', func_get_args());
 
         $page = $this->browser->newPage();
         $page->goto('https://ankiuser.net/edit/');
@@ -72,7 +73,7 @@ class AnkiWebAdapter implements IAnkiWebAdapter
         $page->close();
         //$page->screenshot(['path' => '/app/test.png']);
 
-        $this->logger->info('カード追加完了');
+        $this->logger->info('End to add card to Anki Web');
     }
 
     function __destruct()
