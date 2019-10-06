@@ -5,6 +5,7 @@ namespace tests\unit;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use SimpleLog\Logger;
 use TKuni\AnkiCardGenerator\App;
 use TKuni\AnkiCardGenerator\Domain\Models\Card;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Comment;
@@ -19,6 +20,17 @@ use TKuni\AnkiCardGenerator\Infrastructure\interfaces\ITranslateAdapter;
 
 class AppTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $logger = \Mockery::mock(LoggerInterface::class);
+        $logger->shouldReceive('info');
+        app()->bind(LoggerInterface::class, function() use ($logger) {
+            return $logger;
+        });
+    }
+
     protected function tearDown(): void
     {
         \Mockery::close();
@@ -188,7 +200,9 @@ class AppTest extends TestCase
                 ),
             ];
         });
-        $githubMock->shouldReceive('fetchComments')->andReturnUsing(function () {
+        $githubMock->shouldReceive('fetchComments')->once()->withArgs(function (Issue $issue, ?Carbon $since) {
+            return $since->is('2000/01/01 00:01:00'); // ProgressRepoから取得した値より1分進んでいる事
+        })->andReturnUsing(function () {
             return [
                 new Comment(
                     new EnglishText('comment-body. tomato city  .  .'),
@@ -229,6 +243,83 @@ class AppTest extends TestCase
                                                                              int $number, Carbon $checkedAt) {
             return $checkedAt->is('2000/02/02 00:00:00');
         })->andReturnUndefined();
+        $progressRepoMock->shouldReceive('findByIssue')->andReturnUsing(function ($text) {
+            return new Progress(Carbon::create(2000, 1, 1, 0, 0, 0));
+        });
+        app()->bind(IProgressRepository::class, function () use ($progressRepoMock) {
+            return $progressRepoMock;
+        });
+
+        #
+        # Run
+        #
+        app()->make('app')->run();
+
+        #
+        # Assertion
+        #
+        $this->assertTrue(true);
+    }
+
+    /**
+     * @test
+     */
+    public function run_shouldRunCompleteIfFetchedCommentsAreEmpty()
+    {
+        #
+        # Prepare
+        #
+        $ankiWebMock = \Mockery::mock(IAnkiWebAdapter::class);
+        $ankiWebMock->shouldNotReceive('saveCard');
+        $ankiWebMock->shouldNotReceive('login');
+        app()->bind(IAnkiWebAdapter::class, function () use ($ankiWebMock) {
+            return $ankiWebMock;
+        });
+
+        $githubMock = \Mockery::mock(IGithubAdapter::class);
+        $githubMock->shouldReceive('fetchIssues')->andReturnUsing(function ($username, $repository) {
+            return [
+                new Issue(
+                    $username,
+                    $repository,
+                    1,
+                    new EnglishText('title. apple.'),
+                    new EnglishText("body. grape. \n next line text."),
+                ),
+            ];
+        });
+        $githubMock->shouldReceive('fetchComments')->once()->withArgs(function (Issue $issue, ?Carbon $since) {
+            return $since->is('2000/01/01 00:01:00'); // ProgressRepoから取得した値より1分進んでいる事
+        })->andReturnUsing(function () {
+            return [
+            ];
+        });
+        app()->bind(IGithubAdapter::class, function () use ($githubMock) {
+            return $githubMock;
+        });
+
+        $translateMock = \Mockery::mock(ITranslateAdapter::class);
+        $translateMock->shouldReceive('translate')->andReturnUsing(function ($text) {
+            switch ($text) {
+                case 'comment-body':
+                    return 'コメント本文';
+                case 'tomato city':
+                    return 'トマトの町';
+                case 'next line text':
+                    return '改行を含むテキスト';
+                case 'comment-body2':
+                    return 'コメント本文2';
+                default:
+                    throw new \Exception('意図しない入力:' . $text);
+                    break;
+            }
+        });
+        app()->bind(ITranslateAdapter::class, function () use ($translateMock) {
+            return $translateMock;
+        });
+
+        $progressRepoMock = \Mockery::mock(IProgressRepository::class);
+        $progressRepoMock->shouldNotReceive('save');
         $progressRepoMock->shouldReceive('findByIssue')->andReturnUsing(function ($text) {
             return new Progress(Carbon::create(2000, 1, 1, 0, 0, 0));
         });

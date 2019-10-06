@@ -2,9 +2,11 @@
 
 namespace tests\unit\infrastructure;
 
+use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use TKuni\AnkiCardGenerator\Domain\Models\Github\Issue;
+use TKuni\AnkiCardGenerator\Domain\ObjectValues\EnglishText;
 use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
 
 class GithubAdapterTest extends TestCase
@@ -35,8 +37,15 @@ class GithubAdapterTest extends TestCase
         # Run
         #
         $adapter = app()->make(GithubAdapter::class);
-        $issues = $adapter->fetchIssues('laravel', 'framework');
-        $comments = $adapter->fetchComments($issues[2], null);
+        $issue = new Issue(
+            'laravel',
+            'framework',
+            30192,
+            new EnglishText('a'),
+            new EnglishText('a')
+        );
+        # 2019-10-05T18:55:27Z
+        $comments = $adapter->fetchComments($issue, Carbon::parse('2019-10-05T18:57:27Z'));
 
         #
         # Assertion
