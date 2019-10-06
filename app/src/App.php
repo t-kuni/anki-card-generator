@@ -34,8 +34,7 @@ class App
     private $progressRepo;
 
     public function __construct(LoggerInterface $logger, IAnkiWebAdapter $ankiWeb, IGithubAdapter $github,
-                                ITranslateAdapter $translate,
-                                IProgressRepository $progressRepo)
+                                ITranslateAdapter $translate, IProgressRepository $progressRepo)
     {
         $this->logger       = $logger;
         $this->ankiWeb      = $ankiWeb;
