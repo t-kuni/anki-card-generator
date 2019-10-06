@@ -7,7 +7,7 @@ use TKuni\AnkiCardGenerator\Domain\Models\Github\Issue;
 use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\TranslateAdapter;
 
-class GithubAdapterTest extends TestCase
+class TranslateAdapterTest extends TestCase
 {
     /**
      * @test

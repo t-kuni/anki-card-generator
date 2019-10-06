@@ -55,7 +55,7 @@ class App
         $issue = $issues[0];
         $since = null;
         if (($progress = $this->progressRepo->findByIssue($issue->username(), $issue->repository(), $issue->number())) !== null) {
-            $since = $progress->checked_at();
+            $since = $progress->checked_at()->addMinute(1);
         } else {
             $enTexts = array_merge($enTexts, $issue->title()->separate());
             $enTexts = array_merge($enTexts, $issue->body()->separate());
@@ -76,11 +76,25 @@ class App
             return new Card($enText, $jpText);
         }, $enTexts);
 
-        $id = getenv('ANKI_WEB_ID');
-        $pw = getenv('ANKI_WEB_PW');
+        if (count($cards) === 0) {
+            app()->make(LoggerInterface::class)->info('Exit application as not found new comments.');
+            return;
+        }
+
+        $id   = getenv('ANKI_WEB_ID');
+        $pw   = getenv('ANKI_WEB_PW');
+        $deck = getenv('ANKI_WEB_DECK');
         $this->ankiWeb->login($id, $pw);
         foreach ($cards as $card) {
-            $this->ankiWeb->saveCard('000_test', $card);
+            $this->ankiWeb->saveCard($deck, $card);
         }
+
+        $created_at = null;
+        if (!empty($comments[count($comments) - 1]->created_at())) {
+            $created_at = $comments[count($comments) - 1]->created_at();
+        }
+        $this->progressRepo->save($username, $repository, $issue->number(), $created_at);
+
+        app()->make(LoggerInterface::class)->info('Exit application');
     }
 }

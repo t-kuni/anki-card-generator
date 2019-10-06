@@ -18,6 +18,10 @@ class GithubAdapter implements IGithubAdapter
      * @var LoggerInterface
      */
     private $logger;
+    /**
+     * @var Client
+     */
+    private $client;
 
     public function __construct(LoggerInterface $logger)
     {
@@ -49,11 +53,11 @@ class GithubAdapter implements IGithubAdapter
 
     public function fetchComments(Issue $issue, ?Carbon $since): array
     {
-        $this->logger->info('Start to fetch Comments from github');
+        $this->logger->info('Start to fetch Comments from github', func_get_args());
 
         $parameter = [];
         if (!empty($since)) {
-            $parameter['since'] = $since;
+            $parameter['since'] = $since->format(\DateTime::ISO8601);
         }
 
         $comments = $this->client->api('issue')
@@ -61,8 +65,9 @@ class GithubAdapter implements IGithubAdapter
             ->all($issue->username(), $issue->repository(), $issue->number(), $parameter);
 
         $result = array_map(function ($comment) {
-            $body = new EnglishText($comment['body']);
-            return new Comment($body);
+            $body       = new EnglishText($comment['body']);
+            $created_at = Carbon::parse($comment['updated_at']);
+            return new Comment($body, $created_at);
         }, $comments);
 
         $this->logger->info('End to fetch Comments from github');

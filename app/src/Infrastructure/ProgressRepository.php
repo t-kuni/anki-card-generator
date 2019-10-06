@@ -47,7 +47,7 @@ class ProgressRepository implements IProgressRepository
 
     public function findByIssue(string $username, string $repository, int $number) : ?Progress
     {
-        $this->logger->info('Start to find Progress');
+        $this->logger->info('Start to find Progress', func_get_args());
 
         $docs = $this->store->where('username', '=', $username)
             ->where('repository', '=', $repository)
@@ -61,5 +61,20 @@ class ProgressRepository implements IProgressRepository
         } else {
             return new Progress(Carbon::parse($docs[0]['checked_at']));
         }
+    }
+
+    public function findByRepository(string $username, string $repository) : array
+    {
+        $this->logger->info('Start to find Progress by Repository', func_get_args());
+
+        $docs = $this->store->where('username', '=', $username)
+            ->where('repository', '=', $repository)
+            ->fetch();
+
+        $this->logger->info('End to find Progress');
+
+        return array_map(function($doc) {
+            return new Progress(Carbon::parse($doc['checked_at']));
+        }, $docs);
     }
 }
