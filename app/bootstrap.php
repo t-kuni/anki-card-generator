@@ -10,8 +10,10 @@ use TKuni\AnkiCardGenerator\Infrastructure\AnkiWebAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\GithubAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IAnkiWebAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IGithubAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\interfaces\INotificationAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IProgressRepository;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\ITranslateAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\NotificationAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\ProgressRepository;
 use TKuni\AnkiCardGenerator\Infrastructure\TranslateAdapter;
 
@@ -29,9 +31,14 @@ $app = new Container();
 
 $app->bind('app', App::class);
 $app->singleton(LoggerInterface::class, function() {
-    return new Logger('/dev/stdout', 'default');
+    $logger = new Logger('/dev/stdout', 'default');
+    $logger->setPostHook(function($log_line) {
+        app()->make(INotificationAdapter::class)->notify($log_line);
+    });
+    return $logger;
 });
 $app->bind(IAnkiWebAdapter::class, AnkiWebAdapter::class);
 $app->bind(IGithubAdapter::class, GithubAdapter::class);
 $app->bind(ITranslateAdapter::class, TranslateAdapter::class);
 $app->bind(IProgressRepository::class, ProgressRepository::class);
+$app->bind(INotificationAdapter::class, NotificationAdapter::class);
