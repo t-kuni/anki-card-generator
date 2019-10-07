@@ -3,6 +3,7 @@
 namespace tests\unit;
 
 use Carbon\Carbon;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use SimpleLog\Logger;
@@ -78,6 +79,10 @@ class AppTest extends TestCase
             return $card->front() === 'comment-body2'
                 && $card->back() === 'コメント本文2';
         });
+        $ankiWebMock->shouldReceive('saveCard')->once()->withArgs(function ($deck, Card $card) {
+            return $card->front() === 'version 7.x.x'
+                && $card->back() === 'バージョン 7.x.x';
+        });
         $ankiWebMock->shouldReceive('login')->andReturnUndefined();
         app()->bind(IAnkiWebAdapter::class, function () use ($ankiWebMock) {
             return $ankiWebMock;
@@ -90,7 +95,7 @@ class AppTest extends TestCase
                     $username,
                     $repository,
                     1,
-                    new EnglishText('title. apple.'),
+                    new EnglishText('title. apple. version 7.x.x.'),
                     new EnglishText("body. grape. \n next line text."),
                 ),
             ];
@@ -130,8 +135,10 @@ class AppTest extends TestCase
                     return '改行を含むテキスト';
                 case 'comment-body2':
                     return 'コメント本文2';
+                case 'version 7.x.x':
+                    return 'バージョン 7.x.x';
                 default:
-                    throw new \Exception('意図しない入力:' . $text);
+                    throw new AssertionFailedError('意図しない入力:' . $text);
                     break;
             }
         });

@@ -16,7 +16,7 @@ class EnglishText
 
     public function separate() : array
     {
-        $texts = preg_split('/[.?]/', $this->text, -1, PREG_SPLIT_NO_EMPTY);
+        $texts = preg_split('/(\.\s|\.$|\?)/', $this->text, -1, PREG_SPLIT_NO_EMPTY);
 
         $trimedTexts = array_map(function($text) {
             return trim($text);
