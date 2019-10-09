@@ -32,9 +32,6 @@ $app = new Container();
 $app->bind('app', App::class);
 $app->singleton(LoggerInterface::class, function() {
     $logger = new Logger('/dev/null', 'default');
-    $logger->setPostHook(function($log_line) {
-        app()->make(INotificationAdapter::class)->notify($log_line);
-    });
     $logger->setOutput(true);
     return $logger;
 });

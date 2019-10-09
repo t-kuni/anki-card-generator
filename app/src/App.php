@@ -7,6 +7,7 @@ use TKuni\AnkiCardGenerator\Domain\AnkiCardAdder;
 use TKuni\AnkiCardGenerator\Domain\Models\Card;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IAnkiWebAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IGithubAdapter;
+use TKuni\AnkiCardGenerator\Infrastructure\interfaces\INotificationAdapter;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\IProgressRepository;
 use TKuni\AnkiCardGenerator\Infrastructure\interfaces\ITranslateAdapter;
 
@@ -32,19 +33,28 @@ class App
      * @var IProgressRepository
      */
     private $progressRepo;
+    /**
+     * @var INotificationAdapter
+     */
+    private $notification;
 
     public function __construct(LoggerInterface $logger, IAnkiWebAdapter $ankiWeb, IGithubAdapter $github,
-                                ITranslateAdapter $translate, IProgressRepository $progressRepo)
+                                ITranslateAdapter $translate, IProgressRepository $progressRepo,
+                                INotificationAdapter $notification)
     {
         $this->logger       = $logger;
         $this->ankiWeb      = $ankiWeb;
         $this->github       = $github;
         $this->translate    = $translate;
         $this->progressRepo = $progressRepo;
+        $this->notification = $notification;
     }
 
     public function run()
     {
+        $this->logger->info("Start application");
+        $this->notification->notify("Start application");
+
         $username   = getenv('GITHUB_USER');
         $repository = getenv('GITHUB_REPO');
         $issues     = $this->github->fetchIssues($username, $repository);
@@ -76,7 +86,8 @@ class App
         }, $enTexts);
 
         if (count($cards) === 0) {
-            app()->make(LoggerInterface::class)->info('Exit application as not found new comments.');
+            $this->logger->info('Exit application as not found new comments.');
+            $this->notification->notify("Exit application as not found new comments.");
             return;
         }
 
@@ -94,6 +105,7 @@ class App
         }
         $this->progressRepo->save($username, $repository, $issue->number(), $created_at);
 
-        app()->make(LoggerInterface::class)->info('Exit application');
+        $this->logger->info('Exit application');
+        $this->notification->notify("Exit application");
     }
 }
