@@ -15,9 +15,55 @@ AnkiにはAPIが用意されていないためPuppeteer(ヘッドレスchrome)�
 
 ## アーキテクチャ
 
+PHPのプログラムが動くコンテナ(docker)を作成し  
+AWS Fargateのスケジューリング機能を使って毎朝実行しています。  
+
 ![architecture.png](https://raw.githubusercontent.com/t-kuni/github-issue-2-anki-card/master/docs/architecture.png)
 
+## フォルダ構成
 
+主要なフォルダ構成は以下の通りです。  
+実験的にDDDな構成にしています。
+
+```
+(root)
+├ app                # 主にソースコードが格納されているフォルダ
+│ ├ src
+│ │ ├ Application    # アプリケーション層
+│ │ ├ Domain         #　ドメイン層
+│ │ │ ├ Models
+│ │ │ └ ObjectValues
+│ │ ├ Infrastructure # インフラ層
+│ │ └ App.php        # アプリケーションのメイン処理が記述されたスクリプト
+│ ├ tests            # テストコードが格納されているフォルダ
+│ ├ storage          # 保存データが格納されるフォルダ
+│ ├ bootstrap.php    # DIコンテナの初期化などを行うスクリプト
+│ ├ entrypoint.php   # 一番最初に実行されるスクリプト
+│ ├ helper.php       # ヘルパ関数が定義されているスクリプト
+│ └ .env             # 環境毎の設定ファイル
+└ env                # コンテナの定義が格納されているフォルダ
+　 ├ app              # 本番実行用のコンテナ定義
+　 │ └ Dockerfile
+　 └ app-debug        # デバッグ実行用のコンテナ定義	
+　 　 └ Dockerfile
+```
+
+## 主な使用ライブラリ
+
+* nesk/puphpeteer
+    * ヘッドレスchromeをPHPから操作する 
+* vlucas/phpdotenv
+    * .envファイルを読み込む
+* markrogoyski/simplelog-php
+    * ファイルにログを書きだすシンプルなロガー
+* rakibtg/sleekdb
+    * シンプルなドキュメントDB
+* nesbot/carbon
+    * 日付操作
+* opis/container
+    * シンプルなDIコンテナ
+* mockery/mockery
+    * テスト用のモック作成ライブラリ
 
 # Build
 
