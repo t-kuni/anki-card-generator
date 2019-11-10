@@ -13,6 +13,9 @@
 表面が英語、裏面がその日本語訳となる暗記カードをAnkiに登録します。  
 AnkiにはAPIが用意されていないためPuppeteer(ヘッドレスchrome)を使用してログイン＆カード追加を行っています。  
 
+![screen_shot.png](https://raw.githubusercontent.com/t-kuni/github-issue-2-anki-card/master/docs/screen_shot.png)  
+（実際にスマホ上のアプリ（Anki）で見るとこんな感じで見えます）
+
 ## アーキテクチャ
 
 PHPのプログラムが動くコンテナ(docker)を作成し  
